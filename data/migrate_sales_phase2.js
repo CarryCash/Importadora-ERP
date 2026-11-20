@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
@@ -7,7 +8,7 @@ async function migrate() {
     user: 'postgres',
     host: 'localhost',
     database: 'importadora',
-    password: 'password',
+    password: process.env.DATABASE_PASSWORD,
     port: 5432,
   });
 

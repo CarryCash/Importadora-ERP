@@ -5,6 +5,7 @@ CREATE TABLE products (
     brand VARCHAR(100),
     category VARCHAR(50),
     sku VARCHAR(50) UNIQUE,
+    barcode VARCHAR(120),
     
     -- Precios y Costos
     price NUMERIC DEFAULT 0, -- Base price (deprecated favor of tiers)
@@ -12,9 +13,11 @@ CREATE TABLE products (
     sale_price NUMERIC DEFAULT 0, -- Retail (PVP)
     wholesale_price NUMERIC DEFAULT 0, -- Mayoreo
     professional_price NUMERIC DEFAULT 0, -- Profesional
+    iva_rate NUMERIC(5,2) NOT NULL DEFAULT 13 CHECK (iva_rate >= 0 AND iva_rate <= 15),
     
     -- Atributos Cosméticos
     image_url TEXT,
+    details JSONB NOT NULL DEFAULT '{}'::jsonb,
     skin_type VARCHAR(50), -- Seca, Grasa, Mixta, etc.
     is_vegan BOOLEAN DEFAULT false,
     product_type VARCHAR(50), -- Finished good, Sample, Tester

@@ -20,7 +20,7 @@ import {
   Wallet
 } from 'lucide-react';
 
-const API = 'http://localhost:3000/api';
+const API = '/api';
 
 interface FinanceSummary {
   revenue: number;
@@ -355,23 +355,23 @@ export default function FinancePage() {
 
         .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 32px; }
         .summary-card { background: var(--card); padding: 24px; border-radius: 20px; border: 1px solid var(--border); position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; }
-        .summary-card.highlight { background: #064035; color: white; border: none; }
+        .summary-card.highlight { background: var(--action-color, var(--primary)); color: var(--primary-foreground); border: none; }
         .summary-card.highlight .label { color: rgba(255,255,255,0.7); }
-        .summary-card.highlight .value { color: white; }
+        .summary-card.highlight .value { color: var(--primary-foreground); }
         
         .card-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--secondary); display: flex; align-items: center; justify-content: center; color: var(--muted-foreground); }
-        .summary-card.highlight .card-icon { background: rgba(255,255,255,0.1); color: white; }
+        .summary-card.highlight .card-icon { background: color-mix(in srgb, var(--primary-foreground) 14%, transparent); color: var(--primary-foreground); }
         
         .card-data .label { font-size: 0.8rem; font-weight: 600; color: var(--muted-foreground); }
         .card-data .value { font-size: 1.5rem; font-weight: 800; color: var(--foreground); display: block; margin-top: 4px; }
         
         .card-badge { font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; width: fit-content; display: flex; align-items: center; gap: 4px; }
-        .card-badge.positive { background: #f0fdf4; color: #166534; }
+        .card-badge.positive { background: color-mix(in srgb, var(--action-color, var(--primary)) 12%, var(--card)); color: var(--action-color, var(--primary)); }
         .card-badge.warning { background: #fffbeb; color: #b45309; }
         .card-badge.danger { background: #fef2f2; color: #991b1b; }
         
         .profit-indicator { font-size: 0.8rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; width: fit-content; }
-        .profit-indicator.good { background: #10b981; color: white; }
+        .profit-indicator.good { background: var(--action-color, var(--primary)); color: var(--primary-foreground); }
 
         .finance-grid { display: grid; grid-template-columns: 1fr 400px; gap: 32px; }
         
@@ -398,30 +398,30 @@ export default function FinancePage() {
         .text-danger { color: #ef4444; }
         .font-bold { font-weight: 800; }
 
-        .strategy-card { padding: 24px; background: #064035; color: white; border: none; }
+        .strategy-card { padding: 24px; background: var(--secondary); color: var(--foreground); border: 1px solid var(--border); }
         .strategy-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
         .strategy-header h3 { font-size: 1.1rem; font-weight: 800; margin: 0; }
         .strategy-body p { font-size: 0.95rem; line-height: 1.6; opacity: 0.9; }
-        .strategy-alert { background: rgba(255,255,255,0.1); padding: 16px; border-radius: 12px; display: flex; gap: 12px; font-size: 0.85rem; margin-top: 20px; }
+        .strategy-alert { background: var(--card); padding: 16px; border-radius: 12px; display: flex; gap: 12px; font-size: 0.85rem; margin-top: 20px; }
         .kpi-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
-        .k-item { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; display: flex; flex-direction: column; }
-        .k-item span { font-size: 0.7rem; opacity: 0.7; }
+        .k-item { background: var(--card); padding: 12px; border-radius: 10px; display: flex; flex-direction: column; }
+        .k-item span { font-size: 0.7rem; color: var(--muted-foreground); }
         .k-item strong { font-size: 1.1rem; }
 
         .ledger-card { padding: 24px; margin-top: 24px; }
         .ledger-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: 24px; }
         .chart-placeholder { display: flex; flex-direction: column; align-items: center; gap: 24px; }
-        .donut-sim { width: 160px; height: 160px; border-radius: 50%; border: 20px solid var(--secondary); position: relative; display: flex; align-items: center; justify-content: center; border-left-color: #064035; border-top-color: #064035; }
+        .donut-sim { width: 160px; height: 160px; border-radius: 50%; border: 20px solid var(--secondary); position: relative; display: flex; align-items: center; justify-content: center; border-left-color: var(--action-color, var(--primary)); border-top-color: var(--action-color, var(--primary)); }
         .donut-text { text-align: center; }
         .donut-text span { font-size: 0.7rem; color: var(--muted-foreground); display: block; }
         .donut-text strong { font-size: 1rem; color: var(--foreground); }
         .chart-legend { list-style: none; padding: 0; display: flex; gap: 20px; }
         .chart-legend li { font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
-        .dot.cogs { background: #064035; }
+        .dot.cogs { background: var(--action-color, var(--primary)); }
         .dot.exp { background: var(--border); }
 
-        .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 16px; color: #064035; font-weight: 700; }
+        .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 16px; color: var(--action-color, var(--primary)); font-weight: 700; }
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 

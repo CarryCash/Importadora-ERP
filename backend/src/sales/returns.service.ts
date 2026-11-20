@@ -9,7 +9,7 @@ export class ReturnsService {
     return this.repository.createReturn(dto);
   }
 
-  async findAll() {
-    return this.repository.findAll();
+  async findAll(companyId:string) {
+    return this.repository.findAll(companyId);
   }
 }

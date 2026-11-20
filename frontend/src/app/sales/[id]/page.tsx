@@ -9,7 +9,7 @@ import {
   Banknote, Smartphone, TrendingUp, XCircle
 } from 'lucide-react';
 
-const API = 'http://localhost:3000/api';
+const API = '/api';
 const fmt = (n: number) => `$${Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const STATUS_MAP: Record<string, { bg: string; color: string; label: string; icon: any }> = {
@@ -78,7 +78,7 @@ export default function SaleDetailPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-      showToast('✅ Venta cancelada. Stock revertido.', 'ok');
+      showToast('Venta cancelada. Stock revertido.', 'ok');
       fetchSale();
     } catch (e: any) {
       showToast(e.message, 'err');
@@ -97,7 +97,7 @@ export default function SaleDetailPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-      showToast('✅ Pago registrado', 'ok');
+      showToast('Pago registrado', 'ok');
       setShowAddPayment(false); setPayAmount(''); setPayRef('');
       fetchSale();
     } catch (e: any) {

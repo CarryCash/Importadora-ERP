@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
-import { Truck, MapPin, Package, Clock, ShieldCheck, TrendingUp, ArrowRight, Anchor, X } from 'lucide-react';
+import { Truck, MapPin, Package, Clock, ShieldCheck, TrendingUp, ArrowRight, Anchor, X, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../components/AuthProvider';
+import LogisticsConfiguration from './LogisticsConfiguration';
 
-export default function LogisticsPage() {
+export default function LogisticsPage({ initialView = 'operations' }: { initialView?: 'operations' | 'configuration' }) {
   const { user, token } = useAuth();
   const [containers, setContainers] = useState<any[]>([]);
   const [deliveries, setDeliveries] = useState<any[]>([]);
@@ -23,26 +24,27 @@ export default function LogisticsPage() {
   const [driverName, setDriverName] = useState('');
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
+  const activeView = initialView;
 
-  const isManager = user?.role === 'SUPERADMIN' || user?.role === 'ADMIN' || user?.role === 'LOGISTICS_MANAGER';
+  const isManager = user?.role === 'admin' || Boolean(user?.permissions?.includes('logistics.write'));
 
   const fetchData = () => {
     if (token) {
-      fetch('http://localhost:3000/api/imports/containers/active', {
+      fetch('/api/imports/containers/active', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())
       .then(data => { if (Array.isArray(data)) setContainers(data); })
       .catch(err => console.error(err));
 
-      fetch('http://localhost:3000/api/logistics/deliveries/upcoming', {
+      fetch('/api/logistics/deliveries/upcoming', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())
       .then(data => { if (Array.isArray(data)) setDeliveries(data); })
       .catch(err => console.error(err));
 
-      fetch('http://localhost:3000/api/logistics/stats', {
+      fetch('/api/logistics/stats', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -62,7 +64,7 @@ export default function LogisticsPage() {
     else if (currentStatus === 'En Ruta') nextStatus = 'Entregado';
 
     try {
-      const res = await fetch(`http://localhost:3000/api/logistics/deliveries/${id}/status`, {
+      const res = await fetch(`/api/logistics/deliveries/${id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +86,7 @@ export default function LogisticsPage() {
     if (!editingContainer) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/imports/containers/${editingContainer.id}`, {
+      const res = await fetch(`/api/imports/containers/${editingContainer.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -106,7 +108,7 @@ export default function LogisticsPage() {
     if (!assigningDelivery) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/logistics/deliveries/${assigningDelivery.id}/assign`, {
+      const res = await fetch(`/api/logistics/deliveries/${assigningDelivery.id}/assign`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -147,11 +149,12 @@ export default function LogisticsPage() {
             </div>
           </div>
 
+          {activeView === 'operations' ? <>
           <div className="hero-grid">
             <div className="main-card glass-card">
               <div className="card-header">
                 <div className="icon-box blue">
-                  <Truck size={24} />
+                  <Truck size={18} />
                 </div>
                 <h3>Estado de Operaciones</h3>
               </div>
@@ -323,6 +326,7 @@ export default function LogisticsPage() {
               </div>
             </div>
           </div>
+          </> : <LogisticsConfiguration />}
         </div>
       </main>
 
@@ -463,14 +467,14 @@ export default function LogisticsPage() {
           margin-bottom: 32px;
         }
         .icon-box {
-          width: 48px;
-          height: 48px;
-          border-radius: 14px;
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
-        .icon-box.blue { background: #eff6ff; color: #3b82f6; }
+        .icon-box.blue { background: var(--accent); color: var(--accent-foreground); }
         .card-header h3 { font-size: 1.25rem; font-weight: 700; color: var(--foreground); }
         
         .operations-grid {
@@ -493,8 +497,8 @@ export default function LogisticsPage() {
         .action-btn {
           width: 100%;
           padding: 14px;
-          background: var(--foreground);
-          color: white;
+          background: var(--action-color, var(--primary));
+          color: var(--primary-foreground);
           border: none;
           border-radius: 16px;
           font-weight: 600;
@@ -505,7 +509,7 @@ export default function LogisticsPage() {
           cursor: pointer;
           transition: 0.2s;
         }
-        .action-btn:hover { background: var(--foreground); transform: translateY(-1px); }
+        .action-btn:hover { filter: brightness(.92); transform: translateY(-1px); }
 
         .side-cards {
           display: flex;
@@ -519,15 +523,14 @@ export default function LogisticsPage() {
           padding: 24px;
         }
         .mini-card-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 12px;
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
-        .mini-card-icon.green { background: #f0fdf4; color: #22c55e; }
-        .mini-card-icon.purple { background: #faf5ff; color: #a855f7; }
+        .mini-card-icon.green, .mini-card-icon.purple { background: var(--accent); color: var(--accent-foreground); }
         .mini-card h4 { font-size: 1rem; font-weight: 700; color: var(--foreground); margin: 0; }
         .mini-card p { font-size: 0.85rem; color: var(--muted-foreground); margin: 4px 0 0; }
 
@@ -590,7 +593,7 @@ export default function LogisticsPage() {
         .badge-danger { background: #fee2e2; color: #dc2626; }
         .badge-warning { background: #fef3c7; color: #d97706; }
         .badge-success { background: #dcfce7; color: #15803d; }
-        .icon-box.green { background: #f0fdf4; color: #16a34a; }
+        .icon-box.green { background: var(--accent); color: var(--accent-foreground); }
         
         .btn-secondary-mini {
           background: var(--secondary);

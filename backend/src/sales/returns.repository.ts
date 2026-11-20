@@ -16,6 +16,9 @@ export class ReturnsRepository {
 
       const { sale_id, items, reason, customer_id = null } = dto;
 
+      const fulfillment = await client.query(`SELECT status FROM fulfillment_orders WHERE sale_id=$1 AND status NOT IN ('cancelled','dispatched') LIMIT 1`,[sale_id]);
+      if (fulfillment.rowCount) throw new BadRequestException('No se puede devolver una venta mientras su preparación o despacho siga abierto.');
+
       // 1. Crear cabecera de devolución
       const returnRes = await client.query(
         `INSERT INTO returns (sale_id, customer_id, reason, status)
@@ -33,7 +36,7 @@ export class ReturnsRepository {
         const saleItemRes = await client.query(
           `SELECT si.*, i.id as inventory_id 
            FROM sales_items si
-           JOIN inventory i ON si.batch_id = i.batch_id
+           JOIN inventory i ON i.id = si.inventory_id
            WHERE si.id = $1 AND si.sale_id = $2`,
           [item.sale_item_id, sale_id],
         );
@@ -94,14 +97,15 @@ export class ReturnsRepository {
     }
   }
 
-  async findAll() {
+  async findAll(companyId:string) {
     const res = await this.db.query(`
       SELECT r.*, s.sale_number, c.name as customer_name
       FROM returns r
       JOIN sales s ON r.sale_id = s.id
       LEFT JOIN customers c ON r.customer_id = c.id
+      WHERE r.company_id=$1
       ORDER BY r.created_at DESC
-    `);
+    `,[companyId]);
     return res.rows;
   }
 }

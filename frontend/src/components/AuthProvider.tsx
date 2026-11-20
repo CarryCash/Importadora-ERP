@@ -1,17 +1,26 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
+  id?: string;
   username: string;
+  full_name?: string;
+  email?: string;
+  avatar_url?: string;
+  company_id?: string;
+  branch_id?: string;
+  permissions?: string[];
   role?: string;
+  roles?: string[];
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (token: string, user: User) => void;
+  updateUser: (user: Partial<User>) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -25,14 +34,40 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const router = useRouter();
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    
-    if (savedToken && savedUser) {
+    try {
+      const savedToken = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
+
+      if (!savedToken || !savedUser) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return;
+      }
+
+      const parsedUser: unknown = JSON.parse(savedUser);
+      if (!parsedUser || typeof parsedUser !== 'object' || !('username' in parsedUser)) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return;
+      }
+
       setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      setUser(parsedUser as User);
+    } catch {
+      // A malformed or inaccessible local session must never keep the app on
+      // the startup screen. Discard it and let the route guard send the user
+      // to sign in again.
+      try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      } catch {
+        // Storage can be disabled by the browser; in-memory auth stays empty.
+      }
+      setToken(null);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
   const login = (newToken: string, newUser: User) => {
@@ -44,6 +79,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   };
 
   const logout = () => {
+    if (token) void fetch('/api/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${token}` } }).catch(() => undefined);
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
@@ -51,8 +87,17 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     router.push('/login');
   };
 
+  const updateUser = useCallback((updates: Partial<User>) => {
+    setUser((current) => {
+      if (!current) return current;
+      const next = { ...current, ...updates };
+      localStorage.setItem('user', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, updateUser, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

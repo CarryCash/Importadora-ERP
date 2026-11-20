@@ -42,7 +42,7 @@ export default function ImportDetailPage() {
 
   const fetchImportDetail = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/imports/${id}`, {
+      const response = await fetch(`/api/imports/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -56,7 +56,7 @@ export default function ImportDetailPage() {
 
   const handleStatusUpdate = async (newStatus: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/imports/${id}/status`, {
+      const response = await fetch(`/api/imports/${id}/status`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -69,18 +69,7 @@ export default function ImportDetailPage() {
   };
 
   const handleReceive = async () => {
-    const actual_arrival = new Date().toISOString().split('T')[0];
-    try {
-      const response = await fetch(`http://localhost:3000/api/imports/${id}/receive`, {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ actual_arrival })
-      });
-      if (response.ok) fetchImportDetail();
-    } catch (err) { console.error(err); }
+    router.push(`/receiving?source_type=import&source_id=${encodeURIComponent(String(id))}`);
   };
 
   if (loading || isLoading) {
@@ -217,7 +206,7 @@ export default function ImportDetailPage() {
                  <section className="card action-card">
                     <h2 className="section-title"><CheckCircle2 size={20}/> Gestión de Estado</h2>
                     <button onClick={handleReceive} className="receive-btn">
-                       Marcar como Arribado
+                       Iniciar recepción física
                     </button>
                     <div className="status-quick-change">
                        <span>Cambiar a:</span>

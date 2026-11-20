@@ -3,14 +3,16 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../components/AuthProvider';
 import { useTheme } from '../../components/ThemeProvider';
+import { Moon, Sun } from 'lucide-react';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [otp,setOtp]=useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, preferences } = useTheme();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,10 +20,10 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, otp }),
       });
 
       const data = await response.json();
@@ -42,7 +44,8 @@ export default function LoginPage() {
     <div className="login-container">
       <div className="login-card glass-card">
         <div className="login-header">
-          <h1>Importadora ERP</h1>
+          {preferences.logoDataUrl && <img src={preferences.logoDataUrl} alt="" style={{ width: 52, height: 52, objectFit: 'contain', marginBottom: 12, borderRadius: 12 }} />}
+          <h1>{preferences.companyName}</h1>
           <p>Bienvenido, por favor inicia sesión</p>
         </div>
 
@@ -71,6 +74,11 @@ export default function LoginPage() {
             />
           </div>
 
+          <div className="form-group">
+            <label htmlFor="otp">Código MFA (si está activado)</label>
+            <input id="otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={(e)=>setOtp(e.target.value.replace(/\D/g,'').slice(0,6))} placeholder="000000" />
+          </div>
+
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" disabled={loading} className="login-button">
@@ -80,7 +88,7 @@ export default function LoginPage() {
 
         <div className="theme-toggle-container">
           <button onClick={toggleTheme} className="theme-toggle">
-            {theme === 'light' ? '🌙 Modo Oscuro' : '☀️ Modo Claro'}
+            {theme === 'light' ? <><Moon size={16} /> Modo Oscuro</> : <><Sun size={16} /> Modo Claro</>}
           </button>
         </div>
       </div>

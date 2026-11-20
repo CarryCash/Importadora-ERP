@@ -13,6 +13,7 @@ import {
   Truck,
   Ship,
   Package,
+  Clock3,
   DollarSign,
   Calendar,
   ChevronRight
@@ -50,7 +51,7 @@ export default function DashboardPage() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/reports/dashboard', {
+      const response = await fetch('/api/reports/dashboard', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -115,7 +116,7 @@ export default function DashboardPage() {
               <div className="card table-card-premium">
                 <div className="card-header-premium">
                   <div>
-                    <h3>⏰ Lotes Próximos a Vencer</h3>
+                    <h3><Clock3 size={17} /> Lotes Próximos a Vencer</h3>
                     <p className="card-desc">Acciones preventivas para productos con menos de 90 días</p>
                   </div>
                   <button className="btn-view-all" onClick={() => router.push('/inventory')}>
@@ -172,7 +173,7 @@ export default function DashboardPage() {
               <div className="card table-card-premium">
                 <div className="card-header-premium">
                   <div>
-                    <h3>📦 Stock Crítico</h3>
+                    <h3><Package size={17} /> Stock Crítico</h3>
                     <p className="card-desc">Productos que requieren reposición inmediata</p>
                   </div>
                 </div>

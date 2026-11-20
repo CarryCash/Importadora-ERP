@@ -83,7 +83,7 @@ export default function NewShipmentPage() {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/suppliers', {
+      const response = await fetch('/api/suppliers', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -93,7 +93,7 @@ export default function NewShipmentPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/products', {
+      const response = await fetch('/api/products', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -130,16 +130,16 @@ export default function NewShipmentPage() {
     // Validate items before sending
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if (!item.product_id) { showToast(`❌ Línea ${i + 1}: Debes seleccionar un producto`, 'error'); return; }
-      if (!item.batch_number) { showToast(`❌ Línea ${i + 1}: El número de lote es requerido`, 'error'); return; }
-      if (!item.quantity || Number(item.quantity) <= 0) { showToast(`❌ Línea ${i + 1}: La cantidad debe ser mayor a 0`, 'error'); return; }
-      if (!item.expiration_date) { showToast(`❌ Línea ${i + 1}: La fecha de expiración es requerida (norma ARCSA)`, 'error'); return; }
+      if (!item.product_id) { showToast(`Línea ${i + 1}: Debes seleccionar un producto`, 'error'); return; }
+      if (!item.batch_number) { showToast(`Línea ${i + 1}: El número de lote es requerido`, 'error'); return; }
+      if (!item.quantity || Number(item.quantity) <= 0) { showToast(`Línea ${i + 1}: La cantidad debe ser mayor a 0`, 'error'); return; }
+      if (!item.expiration_date) { showToast(`Línea ${i + 1}: La fecha de expiración es requerida (norma ARCSA)`, 'error'); return; }
     }
 
     setIsSaving(true);
     const payload = { ...formData, items };
     try {
-      const response = await fetch('http://localhost:3000/api/imports', {
+      const response = await fetch('/api/imports', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -149,15 +149,15 @@ export default function NewShipmentPage() {
       });
 
       if (response.ok) {
-        showToast('✅ ¡Embarque registrado exitosamente!', 'success');
+        showToast('Embarque y productos esperados registrados. Completa su recepción desde el módulo Recepción.', 'success');
         setTimeout(() => router.push('/imports'), 1500);
       } else {
         const errorData = await response.json().catch(() => ({}));
-        showToast(`❌ Error: ${errorData.message || 'No se pudo guardar el embarque'}`, 'error');
+        showToast(`Error: ${errorData.message || 'No se pudo guardar el embarque'}`, 'error');
         setIsSaving(false);
       }
     } catch (err) { 
-      showToast('❌ Error de red: No se pudo conectar con el servidor', 'error');
+      showToast('Error de red: No se pudo conectar con el servidor', 'error');
       setIsSaving(false);
     }
   };

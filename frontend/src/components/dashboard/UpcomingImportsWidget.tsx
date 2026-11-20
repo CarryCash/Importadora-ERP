@@ -1,5 +1,5 @@
 import React from 'react';
-import { Ship, Anchor, Calendar, MapPin, PackageOpen, ChevronRight } from 'lucide-react';
+import { Ship, Anchor, Calendar, MapPin, PackageOpen, ChevronRight, Globe } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export interface UpcomingImport {
@@ -29,17 +29,6 @@ export default function UpcomingImportsWidget({ imports }: Props) {
     }
   };
 
-  const getFlagEmoji = (countryCode: string) => {
-    if (!countryCode) return '🌍';
-    const code = countryCode.toUpperCase();
-    if (code === 'CHINA' || code === 'CN') return '🇨🇳';
-    if (code === 'USA' || code === 'US') return '🇺🇸';
-    if (code === 'MEXICO' || code === 'MX') return '🇲🇽';
-    if (code === 'SPAIN' || code === 'ES') return '🇪🇸';
-    if (code === 'COLOMBIA' || code === 'CO') return '🇨🇴';
-    return '🌍';
-  };
-
   const calculateDaysLeft = (etaStr: string) => {
     if (!etaStr) return '?';
     const eta = new Date(etaStr);
@@ -56,7 +45,7 @@ export default function UpcomingImportsWidget({ imports }: Props) {
     <div className="card upcoming-imports-widget">
       <div className="widget-header">
         <div>
-          <h3>🚢 Próximos Arribos</h3>
+          <h3><Ship size={17} /> Próximos Arribos</h3>
           <p className="widget-desc">Contenedores en tránsito y aduana</p>
         </div>
         <button className="btn-view-all" onClick={() => router.push('/imports')}>
@@ -78,7 +67,7 @@ export default function UpcomingImportsWidget({ imports }: Props) {
                 <div key={item.id} className="import-item">
                   
                   <div className="import-origin">
-                    <span className="country-flag">{getFlagEmoji(item.country)}</span>
+                    <span className="country-flag"><Globe size={18} aria-hidden="true" /></span>
                   </div>
 
                   <div className="import-main-info">

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -15,6 +15,15 @@ import { AuthGuard } from './auth/auth.guard';
 import { ReportsModule } from './reports/reports.module';
 import { FinanceModule } from './finance/finance.module';
 import { LogisticsModule } from './logistics/logistics.module';
+import { CompanyModule } from './company/company.module';
+import { PermissionsGuard } from './auth/permissions.guard';
+import { AuditInterceptor } from './database/audit.interceptor';
+import { ReceivingModule } from './receiving/receiving.module';
+import { StorageModule } from './storage/storage.module';
+import { DispatchModule } from './dispatch/dispatch.module';
+import { TransfersModule } from './transfers/transfers.module';
+import { TmsModule } from './tms/tms.module';
+import { SecurityModule } from './security/security.module';
 
 @Module({
   imports: [
@@ -29,7 +38,14 @@ import { LogisticsModule } from './logistics/logistics.module';
     AuthModule,
     ReportsModule,
     FinanceModule,
-    LogisticsModule
+    LogisticsModule,
+    CompanyModule,
+    ReceivingModule,
+    StorageModule,
+    DispatchModule,
+    TransfersModule,
+    TmsModule,
+    SecurityModule
   ],
   controllers: [AppController],
   providers: [
@@ -37,6 +53,14 @@ import { LogisticsModule } from './logistics/logistics.module';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditInterceptor,
     },
   ],
 })

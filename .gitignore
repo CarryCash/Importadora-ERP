@@ -1,11 +1,65 @@
+# Dependencies and package-manager caches
 node_modules/
+.pnpm-store/
+.npm/
+
+# Local environment and credentials
 .env
+.env.*
+!.env.example
+!**/.env.example
+!**/.env.local.example
+
+# Framework/build output
 .next/
+out/
 dist/
 build/
 coverage/
-__pycache__/
-*.pyc
+.nyc_output/
+.turbo/
+.vercel/
+*.tsbuildinfo
+
+# Logs, temporary files and local operating-system metadata
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+*.tmp
+*.temp
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local databases, exports, backups and uploaded content
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.backup
+*.bak
+/backups/
+/uploads/
+/backend/backups/
+/backend/uploads/
+
+# Local development and diagnostic artifacts
+/brain/
+/backend/db_check_output.txt
+/backend/check_db.js
+/backend/check_sales_schema.js
+/backend/check_schema.js
+/backend/debug_import.js
+/backend/create_deliveries_table.js
+/backend/migrate.js
+/backend/migrate_containers.js
+/backend/migrate_users.js
+/backend/migrate_valuation_v2.js
+/backend/update_schema.js
+/backend/seed_logistics.js
+/scripts/test_pg.js
+
+# Editor settings
+.idea/
 .vscode/
-frontend/node_modules/
-backend/node_modules/

@@ -5,11 +5,11 @@ import { QuotesRepository } from './quotes.repository';
 export class QuotesService {
   constructor(private readonly repository: QuotesRepository) {}
 
-  async create(dto: any) {
-    return this.repository.create(dto);
+  async create(dto: any,companyId:string,userId:string,branchId:string|null,userRoles:string[]) {
+    return this.repository.create(dto,companyId,userId,branchId,userRoles);
   }
 
-  async findAll() {
-    return this.repository.findAll();
+  async findAll(companyId:string) {
+    return this.repository.findAll(companyId);
   }
 }

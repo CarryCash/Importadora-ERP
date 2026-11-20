@@ -11,7 +11,8 @@ import {
   Users, 
   Truck,
   PlusCircle,
-  FileBox
+  FileBox,
+  Zap
 } from 'lucide-react';
 
 export default function RoleBasedQuickActions() {
@@ -52,7 +53,7 @@ export default function RoleBasedQuickActions() {
 
   return (
     <div className="quick-actions-card">
-      <h3>⚡ Acciones Rápidas</h3>
+      <h3><Zap size={17} /> Acciones Rápidas</h3>
       <div className="actions-grid">
         {actions.map((action, idx) => (
           <button 

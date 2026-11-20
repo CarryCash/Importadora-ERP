@@ -5,8 +5,10 @@ import { DatabaseService } from '../database/database.service';
 export class WarehousesRepository {
   constructor(private readonly db: DatabaseService) {}
 
-  async findAll() {
-    const res = await this.db.query('SELECT * FROM warehouses WHERE is_active = true ORDER BY name ASC');
+  async findAll(companyId?: string,branchId?:string|null,restrictedWarehouseId?:string|null) {
+    const res = companyId
+      ? await this.db.query('SELECT * FROM warehouses WHERE is_active = true AND company_id=$1 AND ($2::uuid IS NULL OR branch_id=$2) AND ($3::uuid IS NULL OR id=$3) ORDER BY name ASC',[companyId,branchId||null,restrictedWarehouseId||null])
+      : await this.db.query('SELECT * FROM warehouses WHERE is_active = true ORDER BY name ASC');
     return res.rows;
   }
 

@@ -5,35 +5,35 @@ import { ImportsRepository } from './imports.repository';
 export class ImportsService {
   constructor(private readonly repository: ImportsRepository) {}
   
-  async create(dto: any) {
-    return this.repository.createTransaction(dto);
+  async create(dto: any,companyId:string,userId:string) {
+    return this.repository.createTransaction(dto,companyId,userId);
   }
 
-  async findAll() {
-    return this.repository.findAll();
+  async findAll(companyId: string) {
+    return this.repository.findAll(companyId);
   }
 
-  async getActiveContainers() {
-    return this.repository.getActiveContainers();
+  async getActiveContainers(companyId: string) {
+    return this.repository.getActiveContainers(companyId);
   }
 
-  async getContainersAlerts() {
-    return this.repository.getContainersAlerts();
+  async getContainersAlerts(companyId: string) {
+    return this.repository.getContainersAlerts(companyId);
   }
 
-  async updateContainer(id: string, data: any) {
-    return this.repository.updateContainer(id, data.customs_status, data.free_days_deadline);
+  async updateContainer(companyId: string, id: string, data: any) {
+    return this.repository.updateContainer(companyId, id, data.customs_status, data.free_days_deadline);
   }
 
-  async findOne(id: string) {
-    return this.repository.getImportDetail(id);
+  async findOne(companyId: string, id: string) {
+    return this.repository.getImportDetail(companyId, id);
   }
 
-  async updateStatus(id: string, status: string) {
-    return this.repository.updateStatus(id, status);
+  async updateStatus(companyId: string, id: string, status: string) {
+    return this.repository.updateStatus(companyId, id, status);
   }
 
-  async receiveShipment(id: string, actual_arrival: string) {
-    return this.repository.updateArrival(id, actual_arrival);
+  async receiveShipment(companyId: string, id: string, actual_arrival: string) {
+    return this.repository.updateArrival(companyId, id, actual_arrival);
   }
 }

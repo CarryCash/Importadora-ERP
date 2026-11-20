@@ -1,47 +1,56 @@
-import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Req } from '@nestjs/common';
 import { ImportsService } from './imports.service';
+import { Permissions } from '../auth/permissions.decorator';
 
 @Controller('api/imports')
 export class ImportsController {
   constructor(private readonly importsService: ImportsService) {}
 
   @Post()
-  create(@Body() dto: any) {
-    return this.importsService.create(dto);
+  @Permissions('imports.write')
+  create(@Body() dto: any,@Req() req:any) {
+    return this.importsService.create(dto,req.user.company_id,req.user.sub);
   }
 
   @Get()
-  findAll() {
-    return this.importsService.findAll();
+  @Permissions('imports.read')
+  findAll(@Req() req: any) {
+    return this.importsService.findAll(req.user.company_id);
   }
 
   @Get('containers/active')
-  getActiveContainers() {
-    return this.importsService.getActiveContainers();
+  @Permissions('imports.read')
+  getActiveContainers(@Req() req: any) {
+    return this.importsService.getActiveContainers(req.user.company_id);
   }
 
   @Get('containers/alerts')
-  getContainersAlerts() {
-    return this.importsService.getContainersAlerts();
+  @Permissions('imports.read')
+  getContainersAlerts(@Req() req: any) {
+    return this.importsService.getContainersAlerts(req.user.company_id);
   }
 
   @Patch('containers/:id')
-  updateContainer(@Param('id') id: string, @Body() data: any) {
-    return this.importsService.updateContainer(id, data);
+  @Permissions('imports.write')
+  updateContainer(@Param('id') id: string, @Body() data: any, @Req() req: any) {
+    return this.importsService.updateContainer(req.user.company_id, id, data);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.importsService.findOne(id);
+  @Permissions('imports.read')
+  findOne(@Param('id') id: string, @Req() req: any) {
+    return this.importsService.findOne(req.user.company_id, id);
   }
 
   @Patch(':id/status')
-  updateStatus(@Param('id') id: string, @Body('status') status: string) {
-    return this.importsService.updateStatus(id, status);
+  @Permissions('imports.write')
+  updateStatus(@Param('id') id: string, @Body('status') status: string, @Req() req: any) {
+    return this.importsService.updateStatus(req.user.company_id, id, status);
   }
 
   @Patch(':id/receive')
-  receiveShipment(@Param('id') id: string, @Body('actual_arrival') actual_arrival: string) {
-    return this.importsService.receiveShipment(id, actual_arrival);
+  @Permissions('imports.receive')
+  receiveShipment(@Param('id') id: string, @Body('actual_arrival') actual_arrival: string, @Req() req: any) {
+    return this.importsService.receiveShipment(req.user.company_id, id, actual_arrival);
   }
 }

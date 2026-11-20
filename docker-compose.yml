@@ -7,24 +7,68 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password # Coincide con tu database.service.ts
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Define DATABASE_PASSWORD en .env}
       POSTGRES_DB: importadora
     ports:
       - "5432:5432"
     volumes:
       - importadora-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d importadora"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   pgadmin:
     image: dpage/pgadmin4
     container_name: importadora-pgadmin
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@importadora.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@importadora.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?Define PGADMIN_PASSWORD en .env}
     ports:
       - "5050:80"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Define DATABASE_PASSWORD en .env}
+      DATABASE_NAME: importadora
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env con al menos 32 caracteres aleatorios}
+      CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "3001:3000"
+    volumes:
+      - importadora-product-uploads:/app/backend/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      BACKEND_URL: http://backend:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
 
 volumes:
   importadora-db-data:
+  importadora-product-uploads:

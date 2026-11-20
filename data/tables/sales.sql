@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS sales (
     subtotal NUMERIC DEFAULT 0,
     discount NUMERIC DEFAULT 0,
     tax NUMERIC DEFAULT 0,
+    tax_rate NUMERIC(5,2) DEFAULT 0,
     total_amount NUMERIC DEFAULT 0,
     payment_status TEXT DEFAULT 'pending' CHECK (payment_status IN ('pending','partial','paid')),
     notes TEXT,
@@ -31,6 +32,8 @@ CREATE TABLE IF NOT EXISTS sales_items (
     quantity INT NOT NULL DEFAULT 1,
     unit_price NUMERIC NOT NULL DEFAULT 0,
     discount NUMERIC DEFAULT 0,
+    tax_rate NUMERIC(5,2) NOT NULL DEFAULT 13,
+    tax_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
     total_amount NUMERIC NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

@@ -21,6 +21,7 @@ interface UserData {
   warehouse_name?: string;
   last_login?: string;
   created_at: string;
+  role_keys?: string[]; department_id?:string; department_name?:string; position_id?:string; position_name?:string; phone?:string; branch_ids?:string[];
 }
 
 interface Warehouse {
@@ -28,33 +29,46 @@ interface Warehouse {
   name: string;
 }
 
-const API = 'http://localhost:3000/api';
+interface CompanyRole { role_key: string; display_name: string }
+interface Department { id:string; name:string; positions:{id:string;name:string}[] }
+interface Branch { id:string; name:string; city?:string }
+
+const API = '/api';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [roles, setRoles] = useState<CompanyRole[]>([]);
+  const [departments,setDepartments]=useState<Department[]>([]);
+  const [branches,setBranches]=useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   // -- Modal State
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
-  const [formData, setFormData] = useState({
-    username: '', full_name: '', email: '', password: '', 
-    role: 'user', assigned_warehouse_id: '', is_active: true
+  const [formData, setFormData] = useState<{username:string;full_name:string;email:string;password:string;phone:string;role:string;role_keys:string[];department_id:string;position_id:string;branch_ids:string[];assigned_warehouse_id:string;is_active:boolean}>({
+    username: '', full_name: '', email: '', password: '', phone:'',
+        role: 'user', role_keys:['user'], department_id:'', position_id:'', branch_ids:branches[0]?.id?[branches[0].id]:[], assigned_warehouse_id: '', is_active: true
   });
   const [saving, setSaving] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [uRes, wRes] = await Promise.all([
+      const [uRes, wRes, rRes, dRes, bRes] = await Promise.all([
         fetch(`${API}/users`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
-        fetch(`${API}/inventory/warehouses`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+        fetch(`${API}/inventory/warehouses`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
+        fetch(`${API}/company/roles/catalog`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
+        fetch(`${API}/security/departments`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
+        fetch(`${API}/security/branches`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
       ]);
       
       if (uRes.ok) setUsers(await uRes.json());
       if (wRes.ok) setWarehouses(await wRes.json());
+      if (rRes.ok) setRoles((await rRes.json()).map((role: CompanyRole) => ({ role_key: role.role_key, display_name: role.display_name })));
+      if (dRes.ok) setDepartments(await dRes.json());
+      if (bRes.ok) setBranches(await bRes.json());
     } catch (err) {
       console.error('Error fetching team data:', err);
     }
@@ -74,13 +88,7 @@ export default function UsersPage() {
   }, [users, searchTerm]);
 
   const getRoleLabel = (role: string) => {
-    const roles: Record<string, string> = {
-      'admin': 'Administrador',
-      'warehouse': 'Bodeguero',
-      'sales': 'Vendedor',
-      'user': 'Usuario'
-    };
-    return roles[role] || role;
+    return roles.find((item) => item.role_key === role)?.display_name || role;
   };
 
   const handleOpenModal = (user?: UserData) => {
@@ -92,14 +100,16 @@ export default function UsersPage() {
         email: user.email,
         password: '', // Don't show password
         role: user.role,
+        role_keys:user.role_keys?.length?user.role_keys:[user.role],
+        department_id:user.department_id||'',position_id:user.position_id||'',branch_ids:user.branch_ids||[],phone:user.phone||'',
         assigned_warehouse_id: warehouses.find(w => w.name === user.warehouse_name)?.id || '',
         is_active: user.is_active
       });
     } else {
       setEditingUser(null);
       setFormData({
-        username: '', full_name: '', email: '', password: '', 
-        role: 'user', assigned_warehouse_id: '', is_active: true
+        username: '', full_name: '', email: '', password: '', phone:'',
+        role: roles.find(r=>r.role_key==='user')?.role_key||roles[0]?.role_key||'user', role_keys:[roles.find(r=>r.role_key==='user')?.role_key||roles[0]?.role_key||'user'], department_id:'', position_id:'', branch_ids:branches[0]?.id?[branches[0].id]:[], assigned_warehouse_id: '', is_active: true
       });
     }
     setShowModal(true);
@@ -125,6 +135,9 @@ export default function UsersPage() {
       });
 
       if (res.ok) {
+        const savedUser=await res.json();
+        const scopeResponse=await fetch(`${API}/security/users/${savedUser.id}/branches`,{method:'PATCH',headers:{'Content-Type':'application/json',Authorization:`Bearer ${localStorage.getItem('token')}`},body:JSON.stringify({branch_ids:formData.branch_ids})});
+        if(!scopeResponse.ok)throw new Error((await scopeResponse.json()).message||'No se pudo guardar el alcance de sucursales.');
         alert(editingUser ? 'Usuario actualizado con éxito' : '¡Usuario creado exitosamente!');
         setShowModal(false);
         fetchData();
@@ -166,7 +179,7 @@ export default function UsersPage() {
             <p className="subtitle">Administración de usuarios, roles y accesos operativos</p>
           </div>
           <button className="btn-create" onClick={() => handleOpenModal()}>
-            <UserPlus size={18} /> Invitar Usuario
+            <UserPlus size={18} /> Crear usuario
           </button>
         </div>
 
@@ -218,9 +231,7 @@ export default function UsersPage() {
                   <span className="u-username">@{u.username}</span>
                   
                   <div className="role-badge-row">
-                    <span className={`role-badge ${u.role}`}>
-                      <Shield size={12} /> {getRoleLabel(u.role).toUpperCase()}
-                    </span>
+                    {(u.role_keys?.length?u.role_keys:[u.role]).map(role=><span key={role} className={`role-badge ${role}`}><Shield size={12} /> {getRoleLabel(role).toUpperCase()}</span>)}
                     {!u.is_active && <span className="inactive-badge">INACTIVO</span>}
                   </div>
                 </div>
@@ -231,6 +242,7 @@ export default function UsersPage() {
                     <Building2 size={14} /> 
                     {u.warehouse_name ? <span>Bodega: <strong>{u.warehouse_name}</strong></span> : <span className="null-val">Sin Bodega Asignada</span>}
                   </div>
+                  {(u.department_name||u.position_name)&&<div className="d-row"><Users size={14}/>{[u.department_name,u.position_name].filter(Boolean).join(' · ')}</div>}
                   <div className="d-row"><Clock size={14} /> {u.last_login ? `Último acceso: ${new Date(u.last_login).toLocaleDateString()}` : 'Nunca accedió'}</div>
                 </div>
 
@@ -282,6 +294,7 @@ export default function UsersPage() {
                         placeholder="correo@empresa.com"
                       />
                     </div>
+                    <div className="form-group"><label>Teléfono</label><input value={formData.phone} onChange={e=>setFormData({...formData,phone:e.target.value})} /></div>
                     <div className="form-group">
                       <label>{editingUser ? 'Nueva Contraseña (Opcional)' : 'Contraseña Inicial'}</label>
                       <input 
@@ -294,13 +307,13 @@ export default function UsersPage() {
                     
                     <div className="form-group">
                       <label>Rol en el Sistema</label>
-                      <select required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})}>
-                        <option value="admin">Administrador (Acceso Total)</option>
-                        <option value="sales">Vendedor (Solo Ventas/Cientes)</option>
-                        <option value="warehouse">Bodeguero (Solo Inventario)</option>
-                        <option value="user">Usuario Estándar (Lectura)</option>
+                      <select required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value,role_keys:[...new Set([e.target.value,...formData.role_keys.filter(role=>role!==formData.role)])]})}>
+                        {roles.map((role) => <option key={role.role_key} value={role.role_key}>{role.display_name}</option>)}
                       </select>
                     </div>
+                    <div className="form-group"><label>Roles adicionales</label><div className="user-role-checks">{roles.filter(role=>role.role_key!==formData.role).map(role=><label key={role.role_key}><input type="checkbox" checked={formData.role_keys.includes(role.role_key)} onChange={e=>setFormData({...formData,role_keys:e.target.checked?[...formData.role_keys,role.role_key]:formData.role_keys.filter(key=>key!==role.role_key)})}/>{role.display_name}</label>)}</div></div>
+                    <div className="form-group"><label>Departamento</label><select value={formData.department_id} onChange={e=>setFormData({...formData,department_id:e.target.value,position_id:''})}><option value="">Sin asignar</option>{departments.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}</select></div>
+                    <div className="form-group"><label>Cargo</label><select value={formData.position_id} onChange={e=>setFormData({...formData,position_id:e.target.value})}><option value="">Sin asignar</option>{departments.find(d=>d.id===formData.department_id)?.positions.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
 
                     <div className="form-group">
                       <label>Bodega Asignada</label>
@@ -311,6 +324,7 @@ export default function UsersPage() {
                         ))}
                       </select>
                     </div>
+                    <div className="form-group"><label>Sucursales autorizadas</label><div className="user-role-checks">{branches.map(branch=><label key={branch.id}><input type="checkbox" checked={formData.branch_ids.includes(branch.id)} onChange={e=>setFormData({...formData,branch_ids:e.target.checked?[...formData.branch_ids,branch.id]:formData.branch_ids.filter(id=>id!==branch.id)})}/>{branch.name}{branch.city?` · ${branch.city}`:''}</label>)}</div></div>
                   </div>
                 </div>
                 <div className="modal-footer">
@@ -386,6 +400,9 @@ export default function UsersPage() {
         .form-group { display: flex; flex-direction: column; gap: 8px; }
         .form-group label { font-size: 0.85rem; font-weight: 700; color: var(--muted-foreground); }
         .form-group input, .form-group select { padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; outline: none; transition: 0.2s; font-size: 0.95rem; }
+        .user-role-checks { max-height: 130px; overflow: auto; display: grid; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 12px; }
+        .user-role-checks label { display: flex; align-items: center; gap: 8px; color: var(--foreground); font-size: 0.82rem; }
+        .user-role-checks input { width: auto; padding: 0; }
         .form-group input:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
 
         .modal-footer { padding: 24px 32px; background: var(--background); display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--secondary); }

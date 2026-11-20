@@ -54,7 +54,7 @@ export default function ImportsPage() {
 
    const fetchShipments = async () => {
       try {
-         const response = await fetch('http://localhost:3000/api/imports', {
+         const response = await fetch('/api/imports', {
             headers: { 'Authorization': `Bearer ${token}` }
          });
          if (response.ok) {

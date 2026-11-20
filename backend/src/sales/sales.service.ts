@@ -9,26 +9,26 @@ export class SalesService {
     return this.repository.createTransaction(dto);
   }
 
-  async findAll() {
-    return this.repository.findAll();
+  async findAll(companyId:string,branchId?:string|null) {
+    return this.repository.findAll(companyId,branchId);
   }
 
-  async findOne(id: string) {
-    return this.repository.findById(id);
+  async findOne(companyId:string,id: string,branchId?:string|null) {
+    return this.repository.findById(companyId,id,branchId);
   }
 
-  async addPayment(saleId: string, dto: any) {
+  async addPayment(companyId:string,saleId: string, dto: any,branchId?:string|null) {
     if (!dto.method || !dto.amount) {
       throw new BadRequestException('Se requiere método y monto de pago.');
     }
-    return this.repository.addPayment(saleId, dto);
+    return this.repository.addPayment(companyId,saleId, dto,branchId);
   }
 
-  async cancel(id: string) {
-    return this.repository.cancel(id);
+  async cancel(companyId:string,id: string,branchId?:string|null) {
+    return this.repository.cancel(companyId,id,branchId);
   }
 
-  async getSummary() {
-    return this.repository.getSummary();
+  async getSummary(companyId:string,branchId?:string|null) {
+    return this.repository.getSummary(companyId,branchId);
   }
 }

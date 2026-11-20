@@ -8,12 +8,13 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
   constructor() {
     this.pool = new Pool({
-      // Consider using @nestjs/config later for env variables
-      host: 'localhost',
-      port: 5432,
-      user: 'postgres',
-      password: 'password', // Default, the user will adjust this
-      database: 'importadora', // Assuming the DB name is importadora
+      host: process.env.DATABASE_HOST || 'localhost',
+      port: Number(process.env.DATABASE_PORT || 5432),
+      user: process.env.DATABASE_USER || 'postgres',
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE_NAME || 'importadora',
+      max: Number(process.env.DATABASE_POOL_SIZE || 10),
+      connectionTimeoutMillis: 5000,
     });
 
     this.pool.on('error', (err) => {
@@ -28,6 +29,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       this.logger.log('Successfully connected to PostgreSQL Database.');
     } catch (error) {
       this.logger.error('Failed to connect to Database:', error);
+      throw error;
     }
   }
 

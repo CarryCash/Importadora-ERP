@@ -5,6 +5,28 @@ import { DatabaseService } from '../database/database.service';
 export class LogisticsRepository {
   constructor(private readonly db: DatabaseService) {}
 
+  async getConfiguration(companyId: string) {
+    const result = await this.db.query(
+      `SELECT configuration FROM logistics_configurations WHERE company_id = $1`,
+      [companyId],
+    );
+    return result.rows[0]?.configuration || {};
+  }
+
+  async saveConfiguration(companyId: string, userId: string, configuration: Record<string, unknown>) {
+    const result = await this.db.query(
+      `INSERT INTO logistics_configurations (company_id, configuration, updated_by, updated_at)
+       VALUES ($1, $2::jsonb, $3, CURRENT_TIMESTAMP)
+       ON CONFLICT (company_id) DO UPDATE SET
+         configuration = EXCLUDED.configuration,
+         updated_by = EXCLUDED.updated_by,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING configuration, updated_at`,
+      [companyId, JSON.stringify(configuration), userId],
+    );
+    return result.rows[0];
+  }
+
   async getUpcomingDeliveries() {
     const res = await this.db.query(`
       SELECT d.*, s.sale_number 

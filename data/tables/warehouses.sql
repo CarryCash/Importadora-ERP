@@ -11,4 +11,5 @@ CREATE TABLE warehouses (
 INSERT INTO warehouses (name, code, type, description) VALUES
 ('Bodega Principal', 'WH-MAIN', 'physical', 'Bodega matriz operativa'),
 ('Vitrina / Local', 'WH-RETAIL', 'physical', 'Stock disponible en vitrina para venta directa'),
-('Puerto / En Tránsito', 'WH-TRANSIT', 'virtual', 'Mercadería comprada que aún no llega físicamente');
+('Puerto / En Tránsito', 'WH-TRANSIT', 'virtual', 'Mercadería comprada que aún no llega físicamente')
+ON CONFLICT (code) DO NOTHING;

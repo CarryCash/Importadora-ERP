@@ -16,11 +16,11 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body suppressHydrationWarning>
-        <ThemeProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <ThemeProvider>
             {children}
-          </AuthProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -12,7 +12,7 @@ export default function PortAlertsWidget() {
 
   useEffect(() => {
     if (token) {
-      fetch('http://localhost:3000/api/imports/containers/alerts', {
+      fetch('/api/imports/containers/alerts', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())

@@ -20,7 +20,8 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
-    const hasRole = requiredRoles.some((role) => user.role === role);
+    const assignedRoles: string[] = Array.isArray(user.roles) ? user.roles : [user.role];
+    const hasRole = requiredRoles.some((role) => assignedRoles.includes(role));
     
     if (!hasRole) {
       throw new ForbiddenException('No tienes permisos suficientes para acceder a este recurso');

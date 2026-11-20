@@ -1,0 +1,22 @@
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS price_list_name_snapshot VARCHAR(120);
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS price_list_currency_snapshot CHAR(3);
+ALTER TABLE sales ADD COLUMN IF NOT EXISTS price_exchange_rate_snapshot NUMERIC(18,10);
+ALTER TABLE sales_items ADD COLUMN IF NOT EXISTS list_unit_price_snapshot NUMERIC(14,4);
+ALTER TABLE sales_items ADD COLUMN IF NOT EXISTS price_currency_snapshot CHAR(3);
+UPDATE sales_items si SET list_unit_price_snapshot=si.unit_price,price_currency_snapshot='USD' WHERE list_unit_price_snapshot IS NULL;
+ALTER TABLE sales_items ALTER COLUMN list_unit_price_snapshot SET NOT NULL;
+ALTER TABLE sales_items ALTER COLUMN price_currency_snapshot SET NOT NULL;
+
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES companies(id) ON DELETE CASCADE;
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS branch_id UUID REFERENCES branches(id) ON DELETE SET NULL;
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS price_list_id UUID REFERENCES product_price_lists(id) ON DELETE SET NULL;
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS price_list_name_snapshot VARCHAR(120);
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS price_list_currency_snapshot CHAR(3);
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS price_exchange_rate_snapshot NUMERIC(18,10);
+UPDATE quotes q SET company_id=COALESCE((SELECT c.company_id FROM customers c WHERE c.id=q.customer_id),(SELECT m.company_id FROM company_memberships m WHERE m.user_id=q.user_id AND m.is_active ORDER BY m.company_id LIMIT 1)) WHERE q.company_id IS NULL;
+CREATE INDEX IF NOT EXISTS quotes_company_created_idx ON quotes(company_id,created_at DESC);
+ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS tax_rate NUMERIC(5,2) NOT NULL DEFAULT 0;
+ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS price_currency_snapshot CHAR(3) NOT NULL DEFAULT 'USD';
+ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS list_unit_price_snapshot NUMERIC(14,4);
+UPDATE quote_items SET list_unit_price_snapshot=unit_price WHERE list_unit_price_snapshot IS NULL;
+ALTER TABLE quote_items ALTER COLUMN list_unit_price_snapshot SET NOT NULL;
